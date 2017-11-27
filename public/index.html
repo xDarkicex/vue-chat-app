@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang='en'>
+  <head>
+    <meta charset='UTF-8'>
+    <meta http-equiv='X-UA-Compatible' content='ie=edge'>
+    <title>Vue Socket</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.3.2/vue.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/1.7.4/socket.io.js"></script>
+    <!-- UIkit CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/uikit/3.0.0-beta.31/css/uikit.min.css" />
+    <!-- UIkit JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/uikit/3.0.0-beta.31/js/uikit.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/uikit/3.0.0-beta.31/js/uikit-icons.min.js"></script>
+    <script>
+      document.addEventListener("DOMContentLoaded", function(e){
+        var socket = io();
+        
+        new Vue({
+          el: '#chat-app',
+          delimiters: ["{{", "}}"],
+          created() {
+            var self = this
+            socket.on("message", function(server){
+              self.messages.push({
+                user: server.User,
+                message: server.Message,
+                date: new Date().toLocaleString()
+              })
+            })
+          },
+          data: {
+            message: '',
+            messages: []
+          }, 
+          methods: {
+            sendMessage() {
+              socket.emit("message", this.message)
+              this.message = ''
+            },
+            setNickname() {
+              socket.emit("nickname", this.nickname)
+              this.nickname = ''
+              var modal = document.querySelector('#modal-example')
+              UIkit.modal(modal).hide();
+            }
+          }
+        })
+        var modal = document.querySelector('#modal-example')
+        UIkit.modal(modal).show();
+      })
+    </script>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      body {
+        font: 13px Helvetica, Arial;
+      }
+      form {
+        background: #000; 
+        padding: 3px; 
+        /* position: fixed;  */
+        bottom: 0; 
+        width: 100%;
+      }
+      form input {
+        border: 0;
+        padding: 10px;
+        width: 90%;
+        margin-right: 0.5%;
+      }
+      form button {
+        width: 9%;
+        background: rgb(130, 224, 255);
+        border: none;
+        padding: 10px;
+      }
+      #messages {
+        list-style-type: none;
+        margin: 0;
+        padding: 0;
+      }
+      #messages li {
+        padding: 5px 10px;
+      }
+      #messages li:nth-child(odd) {
+        background: #eee;
+      }
+      .date {
+        float: right;
+        color: red;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="chat-app">
+      <ul id="messages">
+        <li v-for="m in messages"><span class="user">{{ m.user }}:</span><span class="text"> {{ m.message }} </span> <span class="date"> {{ m.date }} </span></li>
+      </ul>
+      <!-- This is the modal -->
+      <div id="modal-example" uk-modal>
+          <div class="uk-modal-dialog uk-modal-body">
+              <h2 class="uk-modal-title">Headline</h2>
+              <form>
+                  <input autocomplete="off" v-model="nickname" placeholder="Nickname" />
+                  <button class="uk-modal-close" @click.prevent="setNickname">SEND</button>
+              </form>
+          </div>
+      </div>
+      <form>
+        <input autocomplete="off" v-model="message"/>
+        <button @click.prevent="sendMessage">SEND</button>
+      </form>
+    </div>
+  
+  </body>
+</html>
